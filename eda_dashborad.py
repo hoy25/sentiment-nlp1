@@ -3,11 +3,26 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from wordcloud import WordCloud
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
 
 #import functions from eda
-from eda import compare_brand_cleaning,plot_top_raw_brands,plot_top_cleaned_brands
-st.set_page_config(page_title="Brand Comparison Dashboard", layout="wide")
-page = st.sidebar.radio("Pages", ["Data Cleaning", "EDA on Cleaned Data"])
+from eda import (compare_brand_cleaning,
+                 plot_top_raw_brands,
+                 plot_top_cleaned_brands,
+                 k_mean_cluster_product,
+                   plot_price_hist, plot_rating_hist, 
+                   plot_price_vs_rating_scatter, 
+                   plot_price_box_by_brand,
+                   plot_rating_box_by_brand,
+                   review_length,
+                   review_WordCloud,
+                   rate_reviews,
+                   product_reviews
+                   )
+
+st.set_page_config(layout="wide")
+page = st.sidebar.radio("Pages", ["Data Cleaning", "EDA on Cleaned Data","Reviews' EDA"])
 if page == "Data Cleaning":
     st.title("Visualization Dashboard")
 
@@ -91,17 +106,20 @@ if page == "Data Cleaning":
         st.subheader("Compare the raw data and cleaned data")
         if st.button("merged reviews distribution"):
             fig = compare_brand_cleaning(df_raw, df_cleaned, brand_col='Brand Name', top_k=top_k)
-            st.pyplot(fig)
+            st.pyplot(fig, use_container_width=True)
         
     else:
         st.info("upload raw & normalized data")
 
 elif page == "EDA on Cleaned Data":
-    st.title("Exploratory Data Analysis")
+    st.title("General Exploratory Data Analysis")
     if "df_cleaned" in st.session_state:
         df_cleaned = st.session_state.df_cleaned
         #### show product under each brand
         st.header("Product Distribution")
+        st.markdown("Product name is classified by regularization. \n"
+        "For more accurate identification, may need web script from gsmarena dataset.\n"
+        "For analyzing product name, I can also use FuzzyWuzzy to keep popular brands which contains reviews more than 30.")
         brand_list = sorted(df_cleaned['Brand Name'].unique())
         selected_brand = st.selectbox("Choose Brand", brand_list)
         brand_df = df_cleaned[df_cleaned['Brand Name'] == selected_brand]
@@ -116,8 +134,56 @@ elif page == "EDA on Cleaned Data":
             ax.set_title(f"Product Distribution - {selected_brand}")
             ax.set_xlabel("Product Name")
             ax.set_ylabel("Quantity")
-            st.pyplot(fig)
+            st.pyplot(fig, use_container_width=True)
+
+            if st.checkbox("Show Price Distribution"):
+                fig = plot_price_hist(df_cleaned,selected_brand)
+                st.pyplot(fig, use_container_width=True)
+
+            if st.checkbox("Show Rating Distribution"):
+                fig = plot_rating_hist(df_cleaned,selected_brand)
+                st.pyplot(fig, use_container_width=True)
+
+        
         else:
             st.warning("This brand has no product recorded")
+
+        st.header("Price vs Rating Scatter")
+        fig = plot_price_vs_rating_scatter(df_cleaned)
+        st.pyplot(fig, use_container_width=True)
+        st.header("Price Boxplot by Brand")
+        fig = plot_price_box_by_brand(df_cleaned)
+        st.pyplot(fig, use_container_width=True)
+        st.header("Rating Boxplot by Brand")
+        fig = plot_rating_box_by_brand(df_cleaned)
+        st.pyplot(fig, use_container_width=True)
+        
+    else:
+        st.warning("upload cleaned dataset")
+
+
+elif page == "Reviews' EDA":
+    st.title("Reviews Exploratory Data Analysis")
+    if "df_cleaned" in st.session_state:
+        df_cleaned = st.session_state.df_cleaned
+        if st.button("Reviews length distribution"):
+            st.markdown("### Reviews length distribution")
+            fig = review_length(df_cleaned)
+            st.pyplot(fig, use_container_width=True)
+
+        if st.button("Reviews wordCloud"):
+            st.markdown("### Reviews wordCloud")
+            fig = review_WordCloud(df_cleaned)
+            st.pyplot(fig, use_container_width=True)
+        if st.button("Rate vs Reviews"):
+            st.markdown("### Rate vs Reviews")
+            fig = rate_reviews(df_cleaned)
+            st.pyplot(fig, use_container_width=True)
+        if st.button("Product's Review distribution"):
+            st.markdown("### Rate vs Reviews")
+            fig = product_reviews(df_cleaned)
+            st.pyplot(fig, use_container_width=True)
+        
+
     else:
         st.warning("upload cleaned dataset")
