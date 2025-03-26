@@ -170,11 +170,13 @@ elif page == "Reviews' EDA":
             st.markdown("### Reviews length distribution")
             fig = review_length(df_cleaned)
             st.pyplot(fig, use_container_width=True)
+            st.markdown("Most of reviews are short reviews, which can concluded from the right skewed review length distribution")
 
         if st.button("Reviews wordCloud"):
             st.markdown("### Reviews wordCloud")
             fig = review_WordCloud(df_cleaned)
             st.pyplot(fig, use_container_width=True)
+            st.markdown("From the wordCloud, there're lots of meaningless but frequent word, like 'is', 'the', 'phone', etc. Those words should be handle in the feature engineering ")
         if st.button("Rate vs Reviews"):
             st.markdown("### Rate vs Reviews")
             fig = rate_reviews(df_cleaned)
@@ -183,7 +185,7 @@ elif page == "Reviews' EDA":
             st.markdown("### Rate vs Reviews")
             fig = product_reviews(df_cleaned)
             st.pyplot(fig, use_container_width=True)
-        
+            st.markdown("There are significant outliers in the price of many products, such as the apple iphone 6, which costs nearly 2,000, while the median is much lower. I will use IQR for avoiding model be affected by outliers before fit model.")
 
     else:
         st.warning("upload cleaned dataset")

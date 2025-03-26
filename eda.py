@@ -189,6 +189,7 @@ def rate_reviews(df_cleaned):
     fig, ax = plt.subplots(figsize=(12, 6))
     df_cleaned['Rating'].value_counts().sort_index().plot(kind='bar', ax=ax)
     set_clean_style(ax, title = "Number of Reviews per Rating Level",xlabel="Rating", ylabel="Number of Reviews")
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     apply_style_hist(ax)
 
 def product_reviews(df_cleaned):
@@ -196,4 +197,5 @@ def product_reviews(df_cleaned):
     fig, ax = plt.subplots(figsize=(12, 6))
     sns.boxplot(data=df_cleaned[df_cleaned['Product Name'].isin(top_products)],
                 x='Product Name', y='Price', ax=ax)
-    set_clean_style(ax,title="Product Reviews",xlabel="Product Name",ylabel='Price')
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    set_clean_style(ax,title="Product Price",xlabel="Product Name",ylabel='Price')
