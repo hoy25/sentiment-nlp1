@@ -161,8 +161,10 @@ def review_length(df_cleaned, bins=50):
         ax=ax,
         color='skyblue',
         edgecolor='black',
-        alpha=0.85
+        alpha=0.85,
+        density = True
     )
+    sns.kdeplot(df_cleaned['review_length'], ax=ax, color='red', linewidth=2, label='Trend (KDE)')
 
     ax.set_title("Review Length Distribution (filtered)", fontsize=16)
     ax.set_xlabel("Number of Words", fontsize=12)
@@ -191,14 +193,21 @@ def rate_reviews(df_cleaned):
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     apply_style_hist(ax)
 
-def product_reviews(df_cleaned):
-    top_products = df_cleaned['Product Name'].value_counts().head(10).index
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(data=df_cleaned[df_cleaned['Product Name'].isin(top_products)],
-                x='Product Name', y='Price', ax=ax)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-    set_clean_style(ax,title="Product Price",xlabel="Product Name",ylabel='Price')
+def product_reviews(df_cleaned, remove_outliers=False, method='iqr', lower_q=0.01, upper_q=0.99):
+    df = df_cleaned.copy()
 
+    if remove_outliers:
+        df = remove_price_outliers(df, method=method, lower_quantile=lower_q, upper_quantile=upper_q)
+
+    top_products = df['Product Name'].value_counts().head(10).index
+    filtered_df = df[df['Product Name'].isin(top_products)]
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(data=filtered_df, x='Product Name', y='Price', ax=ax)
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
+    set_clean_style(ax, title="Product Price", xlabel="Product Name", ylabel='Price')
+
+    return fig
 def remove_price_outliers(df, price_col='Price', method='iqr',lower_quantile=0.01, upper_quantile=0.99):
     if method == 'iqr':
         Q1 = df[price_col].quantile(0.25)

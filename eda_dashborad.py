@@ -75,7 +75,7 @@ if page == "Data Cleaning":
 
         fig = compare_brand_cleaning(df_raw, df_cleaned, brand_col='Brand Name', top_k=15)
 
-        if st.button("reviews of raw brand"):
+        if st.expander("reviews of raw brand"):
             st.markdown("### raw brand reviews distribution")
             fig1 = plot_top_raw_brands(df_raw, top_k=top_k)
             st.pyplot(fig1)
@@ -99,14 +99,14 @@ if page == "Data Cleaning":
         else:
             st.success("There is no missing value")
             
-        if st.button("reviews of normalized brand"):
+        if st.expander("reviews of normalized brand"):
             st.markdown("### normalized reviews distribution")
             fig2 = plot_top_cleaned_brands(df_cleaned, top_k=top_k)
             st.pyplot(fig2)
 
         ##merge
         st.subheader("Compare the raw data and cleaned data")
-        if st.button("merged reviews distribution"):
+        if st.expander("merged reviews distribution"):
             fig = compare_brand_cleaning(df_raw, df_cleaned, brand_col='Brand Name', top_k=top_k)
             st.pyplot(fig, use_container_width=True)
         
@@ -157,7 +157,7 @@ elif page == "EDA on Cleaned Data":
                         df_plot, method=method,
                         lower_quantile=lower_q, upper_quantile=upper_q
                     )
-                    st.success(f"✅ Outliers removed using {method} method")
+                    st.success(f"Outliers removed using {method} method")
 
                 fig = plot_price_box_by_brand(df_plot)
                 st.pyplot(fig, use_container_width=True)
@@ -188,26 +188,56 @@ elif page == "Reviews' EDA":
     st.title("Reviews Exploratory Data Analysis")
     if "df_cleaned" in st.session_state:
         df_cleaned = st.session_state.df_cleaned
-        if st.button("Reviews length distribution"):
+        if st.expander("Reviews length distribution"):
             st.markdown("### Reviews length distribution")
             fig = review_length(df_cleaned)
             st.pyplot(fig, use_container_width=True)
             st.markdown("Most of reviews are short reviews, which can concluded from the right skewed review length distribution")
+            st.markdown("The KDE is extremely right skewed due to extremly values, use IQR solve the outlier problem.")
+            st.markdown("### review length outlier removal")
+            remove_review_outliers = st.checkbox("Remove review length outliers", value=True)
+            method_review = st.selectbox("Review outlier method", ["iqr"])
+
+            if method_review == "quantile":
+                lower_q_r = st.slider("Lower review quantile", 0.0, 0.1, 0.01, step=0.005)
+                upper_q_r = st.slider("Upper review quantile", 0.9, 1.0, 0.99, step=0.005)
+            else:
+                lower_q_r = upper_q_r = None
+
+            df_review = df_cleaned.copy()
+            if remove_review_outliers:
+                df_review = remove_review_length_outlier(
+                    df_review, method=method_review,
+                    lower_quantile=lower_q_r, upper_quantile=upper_q_r
+                )
+                st.success(f"Removed review length outliers using {method_review} method")
+
+            fig = review_length(df_review)
+            st.pyplot(fig, use_container_width=True)
 
         if st.button("Reviews wordCloud"):
             st.markdown("### Reviews wordCloud")
             fig = review_WordCloud(df_cleaned)
             st.pyplot(fig, use_container_width=True)
             st.markdown("From the wordCloud, there're lots of meaningless but frequent word, like 'is', 'the', 'phone', etc. Those words should be handle in the feature engineering ")
-        if st.button("Rate vs Reviews"):
+        if st.expander("Rate vs Reviews"):
             st.markdown("### Rate vs Reviews")
             fig = rate_reviews(df_cleaned)
             st.pyplot(fig, use_container_width=True)
-        if st.button("Product's Review distribution"):
-            st.markdown("### Rate vs Reviews")
-            fig = product_reviews(df_cleaned)
-            st.pyplot(fig, use_container_width=True)
-            st.markdown("There are significant outliers in the price of many products, such as the apple iphone 6, which costs nearly 2,000, while the median is much lower. I will use IQR for avoiding model be affected by outliers before fit model.")
+        if st.expander("Product's Review distribution"):
+            st.markdown("### Product Price Distribution")
+            remove_outliers = st.checkbox("Remove price outliers", value=False)
+            method = st.selectbox("Outlier method", options=["iqr", "quantile"])
+            lower_q = st.slider("Lower quantile", 0.0, 0.1, 0.01) if method == "quantile" else 0.01
+            upper_q = st.slider("Upper quantile", 0.9, 1.0, 0.99) if method == "quantile" else 0.99
 
+            fig = product_reviews(
+                df_cleaned,
+                remove_outliers=remove_outliers,
+                method=method,
+                lower_q=lower_q,
+                upper_q=upper_q
+            )
+            st.pyplot(fig, use_container_width=True)
     else:
         st.warning("upload cleaned dataset")
