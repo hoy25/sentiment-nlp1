@@ -1,4 +1,4 @@
-# sentiment-nlp1
+# Sentiment-NLP1
 We want to build sentiment analysis services for our corporate customers. 
 With the services, Our innovation AI’s partner company will have a better understanding of the users’ perspective on their products and services.
 Our potential corporate companies may start with tech startups and extend to larger corporations such as Target, Walmart, Johnson & Johnson, etc. 
