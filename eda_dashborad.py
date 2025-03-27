@@ -18,7 +18,9 @@ from eda import (compare_brand_cleaning,
                    review_length,
                    review_WordCloud,
                    rate_reviews,
-                   product_reviews
+                   product_reviews,
+                   remove_price_outliers,
+                   remove_review_length_outlier
                    )
 
 st.set_page_config(layout="wide")
@@ -138,6 +140,26 @@ elif page == "EDA on Cleaned Data":
 
             if st.checkbox("Show Price Distribution"):
                 fig = plot_price_hist(df_cleaned,selected_brand)
+                st.pyplot(fig, use_container_width=True)
+                st.markdown("There are many outlier in box plot, using IQR.")
+                st.markdown("### price outlier removal")
+                remove_outliers = st.checkbox("Remove price outliers", value=True)
+                method = st.selectbox("Outlier removal method", options=["iqr", "quantile"])
+                if method == "quantile":
+                    lower_q = st.slider("Lower quantile", 0.0, 0.1, 0.01, step=0.005)
+                    upper_q = st.slider("Upper quantile", 0.9, 1.0, 0.99, step=0.005)
+                else:
+                    lower_q = upper_q = None
+
+                df_plot = df_cleaned.copy()
+                if remove_outliers:
+                    df_plot = remove_price_outliers(
+                        df_plot, method=method,
+                        lower_quantile=lower_q, upper_quantile=upper_q
+                    )
+                    st.success(f"✅ Outliers removed using {method} method")
+
+                fig = plot_price_box_by_brand(df_plot)
                 st.pyplot(fig, use_container_width=True)
 
             if st.checkbox("Show Rating Distribution"):

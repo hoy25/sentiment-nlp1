@@ -152,12 +152,11 @@ def plot_rating_box_by_brand(df,brand_col='Brand Name', rating_col='Rating', top
 
 
 
-def review_length(df_cleaned, quantile=0.99, bins=50):
+def review_length(df_cleaned, bins=50):
     df_cleaned['review_length'] = df_cleaned['Reviews'].dropna().astype(str).apply(lambda x: len(x.split()))
-    max_val = df_cleaned['review_length'].quantile(quantile)
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    df_cleaned[df_cleaned['review_length'] <= max_val]['review_length'].hist(
+    df_cleaned['review_length'].hist(
         bins=bins,
         ax=ax,
         color='skyblue',
@@ -199,3 +198,35 @@ def product_reviews(df_cleaned):
                 x='Product Name', y='Price', ax=ax)
     ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
     set_clean_style(ax,title="Product Price",xlabel="Product Name",ylabel='Price')
+
+def remove_price_outliers(df, price_col='Price', method='iqr',lower_quantile=0.01, upper_quantile=0.99):
+    if method == 'iqr':
+        Q1 = df[price_col].quantile(0.25)
+        Q3 = df[price_col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower = Q1 - 1.5 * IQR
+        upper = Q3 + 1.5 * IQR
+    elif method == 'quantile':
+        lower = df[price_col].quantile(lower_quantile)
+        upper = df[price_col].quantile(upper_quantile)
+    else:
+        raise ValueError("Method must be 'iqr' or 'quantile'")
+    
+    return df[(df[price_col] >= lower) & (df[price_col] <= upper)]
+
+def remove_review_length_outlier(df,review_col = 'Reviews',method='iqr',lower_quantile=0.01, upper_quantile=0.99):
+    df_reviewlength = df.copy()
+    df['review_length'] = df[review_col].dropna().astype(str).apply(lambda x: len(x.split()))
+    if method == 'iqr':
+        Q1 = df['review_length'].quantile(0.25)
+        Q3 = df['review_length'].quantile(0.75)
+        IQR = Q3 - Q1
+        lower = Q1 - 1.5 * IQR
+        upper = Q3 + 1.5 * IQR
+    elif method == 'quantile':
+        lower = df['review_length'].quantile(lower_quantile)
+        upper = df['review_length'].quantile(upper_quantile)
+    else:
+        raise ValueError("Method must be 'iqr' or 'quantile'")
+
+    return df[(df['review_length'] >= lower) & (df['review_length'] <= upper)]
