@@ -5,7 +5,7 @@ import seaborn as sns
 from wordcloud import WordCloud
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
-
+import requests
 #import functions from eda
 from eda import (compare_brand_cleaning,
                  plot_top_raw_brands,
@@ -30,9 +30,23 @@ if page == "Data Cleaning":
 
     st.header("Data Cleaning")
     #upload
-    raw_file = st.file_uploader("up load the original dataset", type="csv", key="raw")
-    cleaned_file = st.file_uploader("up load normalized dataset", type="csv", key="cleaned")
+    # https://drive.google.com/file/d/1VpUyS1HrnjpwEh5MoXHgR_5wKBCUPe1J/view?usp=sharing
+    raw_url = "https://drive.google.com/uc?export=download&id=1VpUyS1HrnjpwEh5MoXHgR_5wKBCUPe1J"
+    # https://drive.google.com/file/d/1SDlOvsZy715KSQ0zVMYPJu4y6yiPUMwr/view?usp=sharing
+    cleaned_url = "https://drive.google.com/uc?export=download&id=1SDlOvsZy715KSQ0zVMYPJu4y6yiPUMwr"
+   #raw_file = st.file_uploader("up load the original dataset", type="csv", key="raw")
+    #cleaned_file = st.file_uploader("up load normalized dataset", type="csv", key="cleaned")
+    raw_file = "Amazon.csv"
+    cleaned_file = "normalized_amazon_data.csv"
 
+    raw_response = requests.get(raw_url)
+    with open(raw_file,"wb") as f:
+        f.write(raw_response.content)
+
+    cleaned_response = requests.get(cleaned_url)
+    with open(cleaned_file, "wb") as f:
+        f.write(cleaned_response.content)
+        
     if raw_file and cleaned_file:
         df_raw = pd.read_csv(raw_file)
         df_cleaned = pd.read_csv(cleaned_file)
