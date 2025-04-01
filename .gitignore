@@ -1,13 +1,26 @@
+# macOS 系统文件
 .DS_Store
+
+# Python 缓存文件
 __pycache__/
 *.py[cod]
 
-*.log
-*.tmp
-*.swp
+# VS Code 编辑器配置（可选）
+.vscode/
 
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# 压缩包文件
+*.zip
+
+# 日志文件（如果后续有）
+*.log
+
+# 环境依赖（如果使用虚拟环境）
 env/
 venv/
 .venv/
 
-.vscode/
+# 自动生成的数据文件（如果有临时保存）
+*.tmp
